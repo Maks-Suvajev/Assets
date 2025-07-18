@@ -6,46 +6,54 @@ namespace gfx {
 
     //Constuctor 
     GfxAssets::GfxAssets()
-        : shaderFileTypes{ fragShaderExtension, vertShaderExtension}
     {
-        shaderPaths = loadAllShaderPaths();
+        loadShaderPaths();
     }
 
-
-    // Returns a vector of all glsl source files (.vs and .fs) found in Shaders/glsl
+    // Loads shader source file paths into shaderPaths structure (.vs and .fs) found in Shaders/glsl (in current default config)
     // TODO: This should be an interface to a generic file type finder - need to do this before writing a file finder for any other specific format
     // TODO: Integrate standard logging/debug system to replace cout calls
-    // TODO: Path (__FILE__) relative to build (compile time) structure, Shaders will need to be loaded at run time 
-    std::vector<std::filesystem::path> GfxAssets::loadAllShaderPaths()
+    void GfxAssets::loadShaderPaths()
     {
         namespace fs = std::filesystem; // declutter code
 
-        std::vector<fs::path> glslSourceFilePaths;
-
-        fs::path sourcePath = __FILE__; //path of current source file
+        fs::path sourcePath = __FILE__; //path of current source file TODO: compile time only right now, might need to be more dynamic in future
 
         fs::path currentDir = sourcePath.parent_path(); // removes file name from path
 
-        while (currentDir != "C:\\") //TODO:: Windows specific
+        while (currentDir != rootString) // Searching to root may perhaps be over kill
         {
             std::cout << " DEBUG::current directory = " << currentDir.string() << std::endl;
 
-            fs::path checkDir = currentDir / "Shaders";
+            fs::path checkDir = currentDir / shaderModuleProjectName;
 
             if(fs::exists(checkDir))
             {
                 // Should I check for a .git here and check the project? Possibly even check the commit hash?
-                std::cout << "DEBUG::Shaders directory found." << std::endl;
+                std::cout << "DEBUG::" << shaderModuleProjectName << " directory found." << std::endl;
 
-                checkDir = checkDir / "glsl"; // now look for glsl folder
+                checkDir = checkDir / shaderSourceFolderName; // now look for glsl folder
 
                 if (fs::exists(checkDir))
                 {
+                    std::cout << "DEBUG::" << shaderSourceFolderName << " directory found." << std::endl;
+
+                    std::cout << "DEBUG::Source files found:" << std::endl;
+
                     for (const auto& file : fs::directory_iterator(checkDir))
                     {
-                        if (file.is_regular_file() && (std::ranges::find(this->shaderFileTypes, file.path().extension().string()) != shaderFileTypes.end()))
+                        if (file.is_regular_file())
                         {
-                            glslSourceFilePaths.push_back(file);
+                            if (file.path().extension().string() == vertShaderExtension)
+                            {
+                                std::cout << "Vertex shader: " << file.path().filename() << std::endl;
+                                shaderPaths.vertexShader = file.path();
+                            }
+                            else if (file.path().extension().string() == fragShaderExtension)
+                            {
+                                std::cout << "Fragment shader: " << file.path().filename() << std::endl;
+                                shaderPaths.fragmentShader = file.path();
+                            }
                         }
                     }
                 }
@@ -53,33 +61,14 @@ namespace gfx {
 
             currentDir = currentDir.parent_path();
         }
-
-        if (glslSourceFilePaths.empty())
-        {
-            std::cout << "WARNING::There were no shader source files found. (Only the \"Shaders/glsl\" directory will be searched. Please ensure the git module is pulled correctly.)" << std::endl;
-        }
-
-        return glslSourceFilePaths;
-
     } 
 
-    std::filesystem::path GfxAssets::getShaderPath(std::string shaderExtension)
+    void GfxAssets::resetShaderPaths()
     {
-        if (shaderPaths.empty())
-        {
-            return std::filesystem::path(); // returns empty path object
-        }
-
-        for (auto path : shaderPaths)
-        {
-            if (path.extension().string() == shaderExtension)
-            {
-                return path;
-            }
-        }
-
-        return std::filesystem::path(); // returns empty path object
+        shaderPaths.vertexShader = std::filesystem::path(); 
+        shaderPaths.fragmentShader = std::filesystem::path(); 
     }
+
 
 }
 
