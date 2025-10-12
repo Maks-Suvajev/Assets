@@ -5,10 +5,12 @@ namespace gfx {
 
 //Constuctor 
 GfxAssets::GfxAssets()
+: textureFileTypes({".png", ".jpg"})
 {
     loadShaderPaths();
 }
 
+//TODO: 
 // Loads shader source file paths into shaderPaths structure (.vs and .fs) found in Shaders/glsl (in current default config)
 // TODO: This should be an interface to a generic file type finder - need to do this before writing a file finder for any other specific format
 // TODO: Integrate standard logging/debug system to replace cout calls
@@ -65,6 +67,60 @@ void GfxAssets::loadShaderPaths()
         currentDir = currentDir.parent_path();
     }
 } 
+
+void GfxAssets::loadTexturePaths()
+{
+    namespace fs = std::filesystem; 
+
+    fs::path sourcePath = __FILE__; //path of current source file TODO: compile time only right now, might need to be more dynamic in future
+
+    fs::path currentDir = sourcePath.parent_path(); // removes file name from path
+
+    bool textureFolderFound = false;
+
+    while (currentDir != rootString && !textureFolderFound) // Searching to root may perhaps be over kill
+    {
+        fs::path checkDir = currentDir / texturesFolderName; // TODO: Search directory will be user defined later
+
+        if (fs::exists(checkDir) && fs::is_directory(checkDir))
+        {
+            textureFolderFound = true;
+
+            for (const auto& file : fs::directory_iterator(checkDir))
+            {
+                if (file.is_regular_file())
+                {
+                    if (std::find(textureFileTypes.begin(), textureFileTypes.end(), file.path().extension().string()) != textureFileTypes.end())
+                    {
+                        std::cout << "Texture file found: " << file.path().filename() << std::endl;
+		                texturePaths.push_back(file.path());
+                    }
+                }
+            }
+
+        }
+
+        currentDir = currentDir.parent_path(); 
+    }
+
+    if (texturePaths.empty())
+    {
+        std::cout << "No textures detected! Please check texture path is configured correctly" << std::endl;
+    }
+}
+
+
+std::vector<std::filesystem::path> GfxAssets::getTexturePaths()
+{
+    if (texturePaths.empty())
+    {
+        loadTexturePaths();
+    }
+
+    return texturePaths;
+}
+
+
 
 void GfxAssets::resetShaderPaths()
 {
