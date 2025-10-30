@@ -19,12 +19,12 @@ namespace gfx {
 	inline constexpr char rootString[] =  "C:\\"; // Windows default
 #endif
 
-inline constexpr char shaderModuleProjectName[] = "Shaders"; // TODO: Should be moved externally to project config
-inline constexpr char shaderSourceFolderName[] = "glsl"; // TODO: same as above
+inline constexpr char shaderModuleProjectName[] = "Shaders"; 
+inline constexpr char shaderSourceFolderName[] = "glsl"; 
 
-inline constexpr char texturesFolderName[] = "textures"; // TODO: Should be moved externally to project config
+inline constexpr char texturesFolderName[] = "textures"; 
 
-// extensions for file types used TODO: possibly moved to config file later
+// extensions for file types used 
 inline constexpr char vertShaderExtension[] = ".vs";
 inline constexpr char fragShaderExtension[] = ".fs";
 
@@ -43,7 +43,7 @@ class GfxAssets : public Assets
 
 		GfxAssets();
 		void resetShaderPaths();
-		void loadShaderPaths(); //TODO: Duplicate code between two path loading functions. Need to combine this into a single function.
+		void loadShaderPaths();
 		void loadTexturePaths();
 		std::filesystem::path getVertShaderPath(){return shaderPaths.vertexShader;};
 		std::filesystem::path getFragShaderPath(){return shaderPaths.fragmentShader;};
