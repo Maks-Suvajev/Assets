@@ -23,7 +23,10 @@ void GfxAssets::loadShaderPaths()
 
     while (currentDir != rootString && !shaderProjectFound) // Searching to root may perhaps be over kill
     {
-        std::cout << " DEBUG::current directory = " << currentDir.string() << std::endl;
+
+        #ifdef ENABLE_DEBUG_MESSAGES
+            std::cout << "DEBUG::current directory = " << currentDir.string() << std::endl;
+        #endif
 
         fs::path checkDir = currentDir / shaderModuleProjectName;
 
@@ -31,16 +34,19 @@ void GfxAssets::loadShaderPaths()
         {
             shaderProjectFound = true; // Kill the loop once the Shader project is found.
 
-            // Should I check for a .git here and check the project? Possibly even check the commit hash?
-            std::cout << "DEBUG::" << shaderModuleProjectName << " directory found." << std::endl;
+            #ifdef ENABLE_DEBUG_MESSAGES
+                // Should I check for a .git here and check the project? Possibly even check the commit hash?
+                std::cout << "DEBUG::" << shaderModuleProjectName << " directory found." << std::endl;
+            #endif
 
             checkDir = checkDir / shaderSourceFolderName; // now look for glsl folder
 
             if (fs::exists(checkDir))
             {
-                std::cout << "DEBUG::" << shaderSourceFolderName << " directory found." << std::endl;
-
-                std::cout << "DEBUG::Source files found:" << std::endl;
+                #ifdef ENABLE_DEBUG_MESSAGES
+                    std::cout << "DEBUG::" << shaderSourceFolderName << " directory found." << std::endl;
+                    std::cout << "DEBUG::Source files found:" << std::endl;
+                #endif
 
                 for (const auto& file : fs::directory_iterator(checkDir))
                 {
@@ -48,12 +54,18 @@ void GfxAssets::loadShaderPaths()
                     {
                         if (file.path().extension().string() == vertShaderExtension)
                         {
-                            std::cout << "Vertex shader: " << file.path().filename() << std::endl;
+                            #ifdef ENABLE_DEBUG_MESSAGES
+                                std::cout << "DEBUG::Vertex shader: " << file.path().filename() << std::endl;
+                            #endif
+
                             shaderPaths.vertexShader = file.path();
                         }
                         else if (file.path().extension().string() == fragShaderExtension)
                         {
-                            std::cout << "Fragment shader: " << file.path().filename() << std::endl;
+                            #ifdef ENABLE_DEBUG_MESSAGES
+                                std::cout << "DEBUG::Fragment shader: " << file.path().filename() << std::endl;
+                            #endif
+
                             shaderPaths.fragmentShader = file.path();
                         }
                     }
@@ -90,7 +102,10 @@ void GfxAssets::loadTexturePaths()
                 {
                     if (std::find(textureFileTypes.begin(), textureFileTypes.end(), file.path().extension().string()) != textureFileTypes.end())
                     {
-                        std::cout << "Texture file found: " << file.path().filename() << std::endl;
+                        #ifdef ENABLE_DEBUG_MESSAGES
+                            std::cout << "DEBUG::Texture file found: " << file.path().filename() << std::endl;
+                        #endif
+
 		                texturePaths.push_back(file.path());
                     }
                 }
@@ -103,7 +118,9 @@ void GfxAssets::loadTexturePaths()
 
     if (texturePaths.empty())
     {
-        std::cout << "No textures detected! Please check texture path is configured correctly" << std::endl;
+        #ifdef ENABLE_DEBUG_MESSAGES
+            std::cout << "ERROR::No textures detected! Please check texture path is configured correctly" << std::endl;
+        #endif
     }
 }
 
