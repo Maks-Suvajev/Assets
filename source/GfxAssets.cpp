@@ -10,15 +10,12 @@ GfxAssets::GfxAssets()
     loadShaderPaths();
 }
 
-//TODO: 
-// Loads shader source file paths into shaderPaths structure (.vs and .fs) found in Shaders/glsl (in current default config)
-// TODO: This should be an interface to a generic file type finder - need to do this before writing a file finder for any other specific format
-// TODO: Integrate standard logging/debug system to replace cout calls
+
 void GfxAssets::loadShaderPaths()
 {
     namespace fs = std::filesystem; // declutter code
 
-    fs::path sourcePath = __FILE__; //path of current source file TODO: compile time only right now, might need to be more dynamic in future
+    fs::path sourcePath = __FILE__; //path of current source file
 
     fs::path currentDir = sourcePath.parent_path(); // removes file name from path
 
@@ -68,11 +65,12 @@ void GfxAssets::loadShaderPaths()
     }
 } 
 
+
 void GfxAssets::loadTexturePaths()
 {
     namespace fs = std::filesystem; 
 
-    fs::path sourcePath = __FILE__; //path of current source file TODO: compile time only right now, might need to be more dynamic in future
+    fs::path sourcePath = __FILE__; //path of current source file
 
     fs::path currentDir = sourcePath.parent_path(); // removes file name from path
 
@@ -80,7 +78,7 @@ void GfxAssets::loadTexturePaths()
 
     while (currentDir != rootString && !textureFolderFound) // Searching to root may perhaps be over kill
     {
-        fs::path checkDir = currentDir / texturesFolderName; // TODO: Search directory will be user defined later
+        fs::path checkDir = currentDir / texturesFolderName;
 
         if (fs::exists(checkDir) && fs::is_directory(checkDir))
         {
@@ -119,7 +117,6 @@ std::vector<std::filesystem::path> GfxAssets::getTexturePaths()
 
     return texturePaths;
 }
-
 
 
 void GfxAssets::resetShaderPaths()
