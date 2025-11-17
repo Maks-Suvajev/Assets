@@ -1,19 +1,69 @@
 
-#include "GfxAssets.h"
+#include "GfxAssetsManager.h"
 
 namespace gfx {
 
 //Constuctor 
-GfxAssets::GfxAssets()
+GfxAssetsManager::GfxAssetsManager()
 : textureFileTypes({".png", ".jpg"})
 {
-    loadShaderPaths();
+    //loadShaderPaths();
 }
 
-
-void GfxAssets::loadShaderPaths()
+std::vector<ShaderPaths> GfxAssetsManager::loadShaderPathSet(std::vector<ShaderFilenameStrings> shaderFilenames)
 {
-    namespace fs = std::filesystem; // declutter code
+    std::vector<ShaderPaths> returnVector;
+
+    for (const auto& shaderFilename : shaderFilenames)
+    {
+        ShaderPaths pulledPaths = loadShaderPaths(shaderFilename);
+
+        if (!pulledPaths.fragmentShader.empty() && !pulledPaths.vertexShader.empty())
+        {
+            returnVector.push_back(pulledPaths);
+        }
+    }
+
+    return returnVector;
+} 
+
+
+
+ShaderPaths GfxAssetsManager::loadShaderPaths(ShaderFilenameStrings sourceFileNames)
+{
+    if (shaderPaths.contains(sourceFileNames.setName))
+    {
+        #ifdef ENABLE_DEBUG_MESSAGES
+
+            if (shaderPaths[sourceFileNames.setName].vertexShader.filename().string() != sourceFileNames.vertexShader)
+            {
+                    std::cout << "ERROR::Shader set name found but with differing vertex shader:" << std::endl;
+                    std::cout << "ERROR::Loaded vertex shader in set = " << shaderPaths[sourceFileNames.setName].vertexShader.filename().string() << std::endl;
+                    std::cout << "ERROR::Requested vertex shader     =  " << sourceFileNames.vertexShader << std::endl;
+                    std::cout << "ERROR::Please explicitly delete and load new set or change the name if you want different files." << std::endl;
+            }
+
+            if (shaderPaths[sourceFileNames.setName].fragmentShader.filename().string() != sourceFileNames.fragmentShader)
+            {
+                    std::cout << "ERROR::Shader set name found but with differing fragment shader:" << std::endl;
+                    std::cout << "ERROR::Loaded fragment shader in set = " << shaderPaths[sourceFileNames.setName].fragmentShader.filename().string() << std::endl;
+                    std::cout << "ERROR::Requested fragment shader     =  " << sourceFileNames.fragmentShader << std::endl;
+                    std::cout << "ERROR::Please explicitly delete and load new set or change the name if you want different files." << std::endl;
+            }
+
+        #endif
+
+        #ifdef ENABLE_DEBUG_MESSAGES
+            std::cout << "DEBUG::Returning already loaded set." << std::endl;
+        #endif
+
+        return shaderPaths[sourceFileNames.setName];
+    }
+
+    ShaderPaths foundPaths;
+    foundPaths.setName = sourceFileNames.setName; 
+
+    namespace fs = std::filesystem; // declutter code 
 
     fs::path sourcePath = __FILE__; //path of current source file
 
@@ -52,21 +102,23 @@ void GfxAssets::loadShaderPaths()
                 {
                     if (file.is_regular_file())
                     {
-                        if (file.path().extension().string() == vertShaderExtension)
+
+                        if (file.path().filename().string() == sourceFileNames.vertexShader)
                         {
                             #ifdef ENABLE_DEBUG_MESSAGES
                                 std::cout << "DEBUG::Vertex shader: " << file.path().filename() << std::endl;
                             #endif
 
-                            shaderPaths.vertexShader = file.path();
+                            foundPaths.vertexShader = file.path();
                         }
-                        else if (file.path().extension().string() == fragShaderExtension)
+
+                        if (file.path().filename().string() == sourceFileNames.fragmentShader)
                         {
                             #ifdef ENABLE_DEBUG_MESSAGES
                                 std::cout << "DEBUG::Fragment shader: " << file.path().filename() << std::endl;
                             #endif
 
-                            shaderPaths.fragmentShader = file.path();
+                            foundPaths.fragmentShader = file.path();
                         }
                     }
                 }
@@ -75,10 +127,33 @@ void GfxAssets::loadShaderPaths()
 
         currentDir = currentDir.parent_path();
     }
+
+    bool missingData = false; // Only store the set if there is no data missing
+
+    if (foundPaths.fragmentShader.empty() == true)
+    {
+        #ifdef ENABLE_DEBUG_MESSAGES
+            std::cout << "ERROR::Fragment shader path not found." << std::endl;
+        #endif
+
+        missingData = true;
+    }
+    
+    if (foundPaths.vertexShader.empty() == true)
+    {
+        std::cout << "ERROR::Vertex shader path not found." << std::endl;
+        missingData = true;
+    }
+
+    if (missingData == false)
+    {
+        shaderPaths[sourceFileNames.setName] = foundPaths;
+    }
+
+    return foundPaths;
 } 
 
-
-void GfxAssets::loadTexturePaths()
+void GfxAssetsManager::loadTexturePaths()
 {
     namespace fs = std::filesystem; 
 
@@ -125,7 +200,7 @@ void GfxAssets::loadTexturePaths()
 }
 
 
-std::vector<std::filesystem::path> GfxAssets::getTexturePaths()
+std::vector<std::filesystem::path> GfxAssetsManager::getTexturePaths()
 {
     if (texturePaths.empty())
     {
@@ -136,10 +211,9 @@ std::vector<std::filesystem::path> GfxAssets::getTexturePaths()
 }
 
 
-void GfxAssets::resetShaderPaths()
+void GfxAssetsManager::resetShaderPaths()
 {
-    shaderPaths.vertexShader = std::filesystem::path(); 
-    shaderPaths.fragmentShader = std::filesystem::path(); 
+    shaderPaths.clear();
 }
 
 }

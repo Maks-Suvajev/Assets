@@ -1,12 +1,12 @@
-#ifndef ASSETS_H
-#define ASSETS_H
+#ifndef ASSETS_MANAGER_H
+#define ASSETS_MANAGER_H
 
 
 	// Implemented as a singleton, we should only ever need a single instance to pull all of the required assets
-	class Assets
+	class AssetsManager
 	{
 		public:
-			Assets() = default;
+			AssetsManager() = default;
 
 
 

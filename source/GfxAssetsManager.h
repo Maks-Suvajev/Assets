@@ -1,13 +1,15 @@
-#ifndef GFX_ASSETS_H
-#define GFX_ASSETS_H
+#ifndef GFX_ASSETS_MANAGER_H
+#define GFX_ASSETS_MANAGER_H
 
-#include "Assets.h"
+#include "AssetsManager.h"
 #include <algorithm>
 #include <ranges>
 #include <filesystem>
 #include <iostream>
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include "ShaderManager.h"
 
 namespace gfx {
 
@@ -28,29 +30,23 @@ inline constexpr char texturesFolderName[] = "textures";
 inline constexpr char vertShaderExtension[] = ".vs";
 inline constexpr char fragShaderExtension[] = ".fs";
 
-// Define type to hold shader paths
-struct ShaderPaths
-{
-	// Single instance of each for now, will possibly need to become vector if multiple shaders become required
-	std::filesystem::path vertexShader;
-	std::filesystem::path fragmentShader;
-};
 
 // Implemented as a singleton, we should only ever need a single instance to pull all of the required assets
-class GfxAssets : public Assets
+class GfxAssetsManager : public AssetsManager
 {
 	public:
 
-		GfxAssets();
+		GfxAssetsManager();
 		void resetShaderPaths();
-		void loadShaderPaths();
+		ShaderPaths loadShaderPaths(ShaderFilenameStrings sourceFileNames);
+        std::vector<ShaderPaths> loadShaderPathSet(std::vector<ShaderFilenameStrings> shaderFilenames);
 		void loadTexturePaths();
-		std::filesystem::path getVertShaderPath(){return shaderPaths.vertexShader;};
-		std::filesystem::path getFragShaderPath(){return shaderPaths.fragmentShader;};
+		//std::filesystem::path getVertShaderPath(){return shaderPaths.vertexShader;};
+		//std::filesystem::path getFragShaderPath(){return shaderPaths.fragmentShader;};
 		std::vector<std::filesystem::path> getTexturePaths();
 
 	private:
-		ShaderPaths shaderPaths;
+		std::unordered_map<std::string, ShaderPaths> shaderPaths;
 		std::vector<std::filesystem::path> texturePaths;
 		std::vector<std::string> textureFileTypes;
 };
