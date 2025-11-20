@@ -21,14 +21,16 @@ namespace gfx {
 	inline constexpr char rootString[] =  "C:\\"; // Windows default
 #endif
 
-inline constexpr char shaderModuleProjectName[] = "Shaders"; 
-inline constexpr char shaderSourceFolderName[] = "glsl"; 
+constexpr char shaderModuleProjectName[] = "Shaders"; 
+constexpr char shaderSourceFolderName[] = "glsl"; 
 
-inline constexpr char texturesFolderName[] = "textures"; 
+constexpr char texturesFolderName[] = "textures"; 
 
 // extensions for file types used 
-inline constexpr char vertShaderExtension[] = ".vs";
-inline constexpr char fragShaderExtension[] = ".fs";
+constexpr char vertShaderExtension[] = ".vs";
+constexpr char fragShaderExtension[] = ".fs";
+
+const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"};
 
 
 // Implemented as a singleton, we should only ever need a single instance to pull all of the required assets

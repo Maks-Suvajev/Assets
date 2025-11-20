@@ -5,7 +5,7 @@ namespace gfx {
 
 //Constuctor 
 GfxAssetsManager::GfxAssetsManager()
-: textureFileTypes({".png", ".jpg"})
+: textureFileTypes(supportedTextureFileTypes)
 {
     //loadShaderPaths();
 }
