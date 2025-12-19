@@ -30,7 +30,7 @@ constexpr char texturesFolderName[] = "textures";
 constexpr char vertShaderExtension[] = ".vs";
 constexpr char fragShaderExtension[] = ".fs";
 
-const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"};
+const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"}; // Evaluated at run time
 
 
 // Implemented as a singleton, we should only ever need a single instance to pull all of the required assets
