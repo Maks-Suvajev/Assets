@@ -5,18 +5,19 @@ namespace gfx {
 
 //Constuctor 
 GfxAssetsManager::GfxAssetsManager()
-: textureFileTypes(supportedTextureFileTypes)
+: textureFileTypes(supportedTextureFileTypes),
+  textureFolderPath(getDefaultTexturesDirPath()),
+  shaderFolderPath(getDefaultShaderSourceDirPath())
 {
-    //loadShaderPaths();
 }
 
-std::vector<ShaderPaths> GfxAssetsManager::loadShaderPathSet(std::vector<ShaderFilenameStrings> shaderFilenames)
+std::vector<ShaderProgramFilePaths> GfxAssetsManager::loadShaderPathSet(std::vector<ShaderProgramFilenameStrings> shaderFilenames)
 {
-    std::vector<ShaderPaths> returnVector;
+    std::vector<ShaderProgramFilePaths> returnVector;
 
     for (const auto& shaderFilename : shaderFilenames)
     {
-        ShaderPaths pulledPaths = loadShaderPaths(shaderFilename);
+        ShaderProgramFilePaths pulledPaths = loadShaderPaths(shaderFilename);
 
         if (!pulledPaths.fragmentShader.empty() && !pulledPaths.vertexShader.empty())
         {
@@ -27,9 +28,48 @@ std::vector<ShaderPaths> GfxAssetsManager::loadShaderPathSet(std::vector<ShaderF
     return returnVector;
 } 
 
+std::filesystem::path GfxAssetsManager::getDefaultShaderSourceDirPath()
+{
+    #ifdef SHADER_SOURCE_DEFAULT_PATH
+        return std::filesystem::path(SHADER_SOURCE_DEFAULT_PATH);
+    #else
+        // Construct
+        std::filesystem::path sourceFilePath = __FILE__;
+        std::filesystem::path sourceDirPath = sourceFilePath.parent_path();
+        std::filesystem::path assetsBaseDir = sourceDirPath.parent_path();
+        std::filesystem::path renderEngineDir = assetsBaseDir.parent_path();
+
+        return renderEngineDir / shaderModuleProjectName / shaderSourceFolderName;
+    #endif
+}
 
 
-ShaderPaths GfxAssetsManager::loadShaderPaths(ShaderFilenameStrings sourceFileNames)
+void GfxAssetsManager::checkPathsAndStore(ShaderProgramFilePaths& foundPaths)
+{
+    bool missingData = false; // Only store the set if there is no data missing
+
+    if (foundPaths.fragmentShader.empty() == true)
+    {
+        #ifdef ENABLE_DEBUG_MESSAGES
+            std::cout << "ERROR::Fragment shader path not found." << std::endl;
+        #endif
+
+        missingData = true;
+    }
+    
+    if (foundPaths.vertexShader.empty() == true)
+    {
+        std::cout << "ERROR::Vertex shader path not found." << std::endl;
+        missingData = true;
+    }
+
+    if (missingData == false)
+    {
+        shaderPaths[foundPaths.setName] = foundPaths;
+    }
+}
+
+ShaderProgramFilePaths GfxAssetsManager::loadShaderPaths(ShaderProgramFilenameStrings sourceFileNames)
 {
     if (shaderPaths.contains(sourceFileNames.setName))
     {
@@ -60,135 +100,99 @@ ShaderPaths GfxAssetsManager::loadShaderPaths(ShaderFilenameStrings sourceFileNa
         return shaderPaths[sourceFileNames.setName];
     }
 
-    ShaderPaths foundPaths;
-    foundPaths.setName = sourceFileNames.setName; 
+    ShaderProgramFilePaths returnPaths;
+    returnPaths.setName = sourceFileNames.setName;
 
-    namespace fs = std::filesystem; // declutter code 
-
-    fs::path sourcePath = __FILE__; //path of current source file
-
-    fs::path currentDir = sourcePath.parent_path(); // removes file name from path
-
-    bool shaderProjectFound = false;
-
-    while (currentDir != rootString && !shaderProjectFound) // Searching to root may perhaps be over kill
+    if (shaderFolderPath.empty())
     {
+        shaderFolderPath = getDefaultShaderSourceDirPath();
+    }
 
-        #ifdef ENABLE_DEBUG_MESSAGES
-            std::cout << "DEBUG::current directory = " << currentDir.string() << std::endl;
-        #endif
-
-        fs::path checkDir = currentDir / shaderModuleProjectName;
-
-        if(fs::exists(checkDir))
+    if (std::filesystem::exists(shaderFolderPath) && std::filesystem::is_directory(shaderFolderPath))
+    {
+        for (const auto& file : std::filesystem::directory_iterator(shaderFolderPath))
         {
-            shaderProjectFound = true; // Kill the loop once the Shader project is found.
-
-            #ifdef ENABLE_DEBUG_MESSAGES
-                // Should I check for a .git here and check the project? Possibly even check the commit hash?
-                std::cout << "DEBUG::" << shaderModuleProjectName << " directory found." << std::endl;
-            #endif
-
-            checkDir = checkDir / shaderSourceFolderName; // now look for glsl folder
-
-            if (fs::exists(checkDir))
+            if (file.is_regular_file())
             {
-                #ifdef ENABLE_DEBUG_MESSAGES
-                    std::cout << "DEBUG::" << shaderSourceFolderName << " directory found." << std::endl;
-                    std::cout << "DEBUG::Source files found:" << std::endl;
-                #endif
-
-                for (const auto& file : fs::directory_iterator(checkDir))
+                if (file.path().filename().string() == sourceFileNames.vertexShader)
                 {
-                    if (file.is_regular_file())
-                    {
+                    #ifdef ENABLE_DEBUG_MESSAGES
+                        std::cout << "DEBUG::Vertex shader: " << file.path().filename() << std::endl;
+                    #endif
 
-                        if (file.path().filename().string() == sourceFileNames.vertexShader)
-                        {
-                            #ifdef ENABLE_DEBUG_MESSAGES
-                                std::cout << "DEBUG::Vertex shader: " << file.path().filename() << std::endl;
-                            #endif
+                    returnPaths.vertexShader = file.path();
+                }
 
-                            foundPaths.vertexShader = file.path();
-                        }
+                if (file.path().filename().string() == sourceFileNames.fragmentShader)
+                {
+                    #ifdef ENABLE_DEBUG_MESSAGES
+                        std::cout << "DEBUG::Fragment shader: " << file.path().filename() << std::endl;
+                    #endif
 
-                        if (file.path().filename().string() == sourceFileNames.fragmentShader)
-                        {
-                            #ifdef ENABLE_DEBUG_MESSAGES
-                                std::cout << "DEBUG::Fragment shader: " << file.path().filename() << std::endl;
-                            #endif
-
-                            foundPaths.fragmentShader = file.path();
-                        }
-                    }
+                    returnPaths.fragmentShader = file.path();
                 }
             }
         }
-
-        currentDir = currentDir.parent_path();
     }
-
-    bool missingData = false; // Only store the set if there is no data missing
-
-    if (foundPaths.fragmentShader.empty() == true)
+    else
     {
         #ifdef ENABLE_DEBUG_MESSAGES
-            std::cout << "ERROR::Fragment shader path not found." << std::endl;
+            std::cout << "ERROR::Current shader source directory is invalid: " << shaderFolderPath.string() << std::endl;
         #endif
-
-        missingData = true;
-    }
-    
-    if (foundPaths.vertexShader.empty() == true)
-    {
-        std::cout << "ERROR::Vertex shader path not found." << std::endl;
-        missingData = true;
     }
 
-    if (missingData == false)
-    {
-        shaderPaths[sourceFileNames.setName] = foundPaths;
-    }
+    checkPathsAndStore(returnPaths);
 
-    return foundPaths;
+    return returnPaths;
 } 
+
+std::filesystem::path GfxAssetsManager::getDefaultTexturesDirPath()
+{
+    #ifdef TEXTURES_DEFAULT_PATH
+        return std::filesystem::path(TEXTURES_DEFAULT_PATH);
+    #else
+
+        // Construct
+        std::filesystem::path sourceFilePath = __FILE__;
+        std::filesystem::path sourceDirPath = sourceFilePath.parent_path();
+        std::filesystem::path assetsBaseDir = sourceDirPath.parent_path();
+
+        return assetsBaseDir / defaultTexturesFolderName;
+
+    #endif
+}
+
+void GfxAssetsManager::populateTexturePaths(std::filesystem::path textureFolderPath)
+{
+    for (const auto& file : std::filesystem::directory_iterator(textureFolderPath))
+    {
+        if (file.is_regular_file())
+        {
+            if (std::find(textureFileTypes.begin(), textureFileTypes.end(), file.path().extension().string()) != textureFileTypes.end())
+            {
+                #ifdef ENABLE_DEBUG_MESSAGES
+                    std::cout << "DEBUG::Texture file found: " << file.path().filename() << std::endl;
+                #endif
+
+                texturePaths.push_back(file.path());
+            }
+        }
+    }
+}
 
 void GfxAssetsManager::loadTexturePaths()
 {
-    namespace fs = std::filesystem; 
+    std::filesystem::path textureFolderPath = getDefaultTexturesDirPath();
 
-    fs::path sourcePath = __FILE__; //path of current source file
-
-    fs::path currentDir = sourcePath.parent_path(); // removes file name from path
-
-    bool textureFolderFound = false;
-
-    while (currentDir != rootString && !textureFolderFound) // Searching to root may perhaps be over kill
+    if (std::filesystem::exists(textureFolderPath) && std::filesystem::is_directory(textureFolderPath))
     {
-        fs::path checkDir = currentDir / texturesFolderName;
-
-        if (fs::exists(checkDir) && fs::is_directory(checkDir))
-        {
-            textureFolderFound = true;
-
-            for (const auto& file : fs::directory_iterator(checkDir))
-            {
-                if (file.is_regular_file())
-                {
-                    if (std::find(textureFileTypes.begin(), textureFileTypes.end(), file.path().extension().string()) != textureFileTypes.end())
-                    {
-                        #ifdef ENABLE_DEBUG_MESSAGES
-                            std::cout << "DEBUG::Texture file found: " << file.path().filename() << std::endl;
-                        #endif
-
-		                texturePaths.push_back(file.path());
-                    }
-                }
-            }
-
-        }
-
-        currentDir = currentDir.parent_path(); 
+        populateTexturePaths(textureFolderPath);
+    }
+    else
+    {
+        #ifdef ENABLE_DEBUG_MESSAGES
+            std::cout << "ERROR::Texture path directory is not valid: " << textureFolderPath.string() << std::endl;
+        #endif
     }
 
     if (texturePaths.empty())
