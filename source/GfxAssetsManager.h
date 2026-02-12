@@ -21,16 +21,15 @@ namespace gfx {
 	inline constexpr char rootString[] =  "C:\\"; // Windows default
 #endif
 
-constexpr char shaderModuleProjectName[] = "Shaders"; 
-constexpr char shaderSourceFolderName[] = "glsl"; 
-
-constexpr char texturesFolderName[] = "textures"; 
+constexpr char defaultTexturesFolderName[] = "textures"; 
 
 // extensions for file types used 
 constexpr char vertShaderExtension[] = ".vs";
 constexpr char fragShaderExtension[] = ".fs";
 
-const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"};
+const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"}; // Evaluated at run time
+
+
 
 
 // Implemented as a singleton, we should only ever need a single instance to pull all of the required assets
@@ -40,17 +39,21 @@ class GfxAssetsManager : public AssetsManager
 
 		GfxAssetsManager();
 		void resetShaderPaths();
-		ShaderPaths loadShaderPaths(ShaderFilenameStrings sourceFileNames);
-        std::vector<ShaderPaths> loadShaderPathSet(std::vector<ShaderFilenameStrings> shaderFilenames);
+        void checkPathsAndStore(ShaderProgramFilePaths& foundPaths);
+        std::filesystem::path getDefaultShaderSourceDirPath();
+		ShaderProgramFilePaths loadShaderPaths(ShaderProgramFilenameStrings sourceFileNames);
+        std::vector<ShaderProgramFilePaths> loadShaderPathSet(std::vector<ShaderProgramFilenameStrings> shaderFilenames);
 		void loadTexturePaths();
-		//std::filesystem::path getVertShaderPath(){return shaderPaths.vertexShader;};
-		//std::filesystem::path getFragShaderPath(){return shaderPaths.fragmentShader;};
+        void populateTexturePaths(std::filesystem::path textureFolderPath);
 		std::vector<std::filesystem::path> getTexturePaths();
+        std::filesystem::path getDefaultTexturesDirPath();
 
 	private:
-		std::unordered_map<std::string, ShaderPaths> shaderPaths;
-		std::vector<std::filesystem::path> texturePaths;
-		std::vector<std::string> textureFileTypes;
+		std::unordered_map<std::string, ShaderProgramFilePaths> shaderPaths;
+		std::vector<std::filesystem::path>                                   texturePaths;
+		std::vector<std::string>                                textureFileTypes;
+        std::filesystem::path                                                textureFolderPath;
+        std::filesystem::path                                                shaderFolderPath;
 };
 }
 
