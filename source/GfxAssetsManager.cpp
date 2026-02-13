@@ -43,7 +43,6 @@ std::filesystem::path GfxAssetsManager::getDefaultShaderSourceDirPath()
     #endif
 }
 
-
 void GfxAssetsManager::checkPathsAndStore(ShaderProgramFilePaths& foundPaths)
 {
     bool missingData = false; // Only store the set if there is no data missing
@@ -203,7 +202,6 @@ void GfxAssetsManager::loadTexturePaths()
     }
 }
 
-
 std::vector<std::filesystem::path> GfxAssetsManager::getTexturePaths()
 {
     if (texturePaths.empty())
@@ -213,7 +211,6 @@ std::vector<std::filesystem::path> GfxAssetsManager::getTexturePaths()
 
     return texturePaths;
 }
-
 
 void GfxAssetsManager::resetShaderPaths()
 {

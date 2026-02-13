@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+
 #include "ShaderManager.h"
 
 namespace gfx {
@@ -29,9 +30,6 @@ constexpr char fragShaderExtension[] = ".fs";
 
 const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"}; // Evaluated at run time
 
-
-
-
 // Implemented as a singleton, we should only ever need a single instance to pull all of the required assets
 class GfxAssetsManager : public AssetsManager
 {
@@ -50,10 +48,10 @@ class GfxAssetsManager : public AssetsManager
 
 	private:
 		std::unordered_map<std::string, ShaderProgramFilePaths> shaderPaths;
-		std::vector<std::filesystem::path>                                   texturePaths;
+		std::vector<std::filesystem::path>                      texturePaths;
 		std::vector<std::string>                                textureFileTypes;
-        std::filesystem::path                                                textureFolderPath;
-        std::filesystem::path                                                shaderFolderPath;
+        std::filesystem::path                                   textureFolderPath;
+        std::filesystem::path                                   shaderFolderPath;
 };
 }
 
