@@ -2,6 +2,8 @@
 #define GFX_ASSETS_MANAGER_H
 
 #include "AssetsManager.h"
+
+// STL
 #include <algorithm>
 #include <ranges>
 #include <filesystem>
@@ -10,7 +12,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "ShaderManager.h"
+#include "ShaderTypes.h"
 
 namespace gfx {
 
@@ -41,17 +43,17 @@ class GfxAssetsManager : public AssetsManager
         std::filesystem::path getDefaultShaderSourceDirPath();
 		ShaderProgramFilePaths loadShaderPaths(ShaderProgramFilenameStrings sourceFileNames);
         std::vector<ShaderProgramFilePaths> loadShaderPathSet(std::vector<ShaderProgramFilenameStrings> shaderFilenames);
-		void loadTexturePaths();
+		void refreshTexturePaths();
         void populateTexturePaths(std::filesystem::path textureFolderPath);
-		std::vector<std::filesystem::path> getTexturePaths();
+		std::vector<std::filesystem::path>& getTexturePaths();
         std::filesystem::path getDefaultTexturesDirPath();
 
 	private:
-		std::unordered_map<std::string, ShaderProgramFilePaths> shaderPaths;
-		std::vector<std::filesystem::path>                      texturePaths;
-		std::vector<std::string>                                textureFileTypes;
-        std::filesystem::path                                   textureFolderPath;
-        std::filesystem::path                                   shaderFolderPath;
+		std::unordered_map<std::string, ShaderProgramFilePaths> m_shaderPaths;
+		std::vector<std::filesystem::path>                      m_texturePaths;
+		std::vector<std::string>                                m_textureFileTypes;
+        std::filesystem::path                                   m_textureFolderPath;
+        std::filesystem::path                                   m_shaderFolderPath;
 };
 }
 

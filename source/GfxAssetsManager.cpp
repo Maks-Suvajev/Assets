@@ -5,9 +5,9 @@ namespace gfx {
 
 //Constuctor 
 GfxAssetsManager::GfxAssetsManager()
-: textureFileTypes(supportedTextureFileTypes),
-  textureFolderPath(getDefaultTexturesDirPath()),
-  shaderFolderPath(getDefaultShaderSourceDirPath())
+: m_textureFileTypes(supportedTextureFileTypes),
+  m_textureFolderPath(getDefaultTexturesDirPath()),
+  m_shaderFolderPath(getDefaultShaderSourceDirPath())
 {
 }
 
@@ -64,28 +64,28 @@ void GfxAssetsManager::checkPathsAndStore(ShaderProgramFilePaths& foundPaths)
 
     if (missingData == false)
     {
-        shaderPaths[foundPaths.setName] = foundPaths;
+        m_shaderPaths[foundPaths.setName] = foundPaths;
     }
 }
 
 ShaderProgramFilePaths GfxAssetsManager::loadShaderPaths(ShaderProgramFilenameStrings sourceFileNames)
 {
-    if (shaderPaths.contains(sourceFileNames.setName))
+    if (m_shaderPaths.contains(sourceFileNames.setName))
     {
         #ifdef ENABLE_DEBUG_MESSAGES
 
-            if (shaderPaths[sourceFileNames.setName].vertexShader.filename().string() != sourceFileNames.vertexShader)
+            if (m_shaderPaths[sourceFileNames.setName].vertexShader.filename().string() != sourceFileNames.vertexShader)
             {
                     std::cout << "ERROR::Shader set name found but with differing vertex shader:" << std::endl;
-                    std::cout << "ERROR::Loaded vertex shader in set = " << shaderPaths[sourceFileNames.setName].vertexShader.filename().string() << std::endl;
+                    std::cout << "ERROR::Loaded vertex shader in set = " << m_shaderPaths[sourceFileNames.setName].vertexShader.filename().string() << std::endl;
                     std::cout << "ERROR::Requested vertex shader     =  " << sourceFileNames.vertexShader << std::endl;
                     std::cout << "ERROR::Please explicitly delete and load new set or change the name if you want different files." << std::endl;
             }
 
-            if (shaderPaths[sourceFileNames.setName].fragmentShader.filename().string() != sourceFileNames.fragmentShader)
+            if (m_shaderPaths[sourceFileNames.setName].fragmentShader.filename().string() != sourceFileNames.fragmentShader)
             {
                     std::cout << "ERROR::Shader set name found but with differing fragment shader:" << std::endl;
-                    std::cout << "ERROR::Loaded fragment shader in set = " << shaderPaths[sourceFileNames.setName].fragmentShader.filename().string() << std::endl;
+                    std::cout << "ERROR::Loaded fragment shader in set = " << m_shaderPaths[sourceFileNames.setName].fragmentShader.filename().string() << std::endl;
                     std::cout << "ERROR::Requested fragment shader     =  " << sourceFileNames.fragmentShader << std::endl;
                     std::cout << "ERROR::Please explicitly delete and load new set or change the name if you want different files." << std::endl;
             }
@@ -96,20 +96,20 @@ ShaderProgramFilePaths GfxAssetsManager::loadShaderPaths(ShaderProgramFilenameSt
             std::cout << "DEBUG::Returning already loaded set." << std::endl;
         #endif
 
-        return shaderPaths[sourceFileNames.setName];
+        return m_shaderPaths[sourceFileNames.setName];
     }
 
     ShaderProgramFilePaths returnPaths;
     returnPaths.setName = sourceFileNames.setName;
 
-    if (shaderFolderPath.empty())
+    if (m_shaderFolderPath.empty())
     {
-        shaderFolderPath = getDefaultShaderSourceDirPath();
+        m_shaderFolderPath = getDefaultShaderSourceDirPath();
     }
 
-    if (std::filesystem::exists(shaderFolderPath) && std::filesystem::is_directory(shaderFolderPath))
+    if (std::filesystem::exists(m_shaderFolderPath) && std::filesystem::is_directory(m_shaderFolderPath))
     {
-        for (const auto& file : std::filesystem::directory_iterator(shaderFolderPath))
+        for (const auto& file : std::filesystem::directory_iterator(m_shaderFolderPath))
         {
             if (file.is_regular_file())
             {
@@ -136,7 +136,7 @@ ShaderProgramFilePaths GfxAssetsManager::loadShaderPaths(ShaderProgramFilenameSt
     else
     {
         #ifdef ENABLE_DEBUG_MESSAGES
-            std::cout << "ERROR::Current shader source directory is invalid: " << shaderFolderPath.string() << std::endl;
+            std::cout << "ERROR::Current shader source directory is invalid: " << m_shaderFolderPath.string() << std::endl;
         #endif
     }
 
@@ -167,34 +167,39 @@ void GfxAssetsManager::populateTexturePaths(std::filesystem::path textureFolderP
     {
         if (file.is_regular_file())
         {
-            if (std::find(textureFileTypes.begin(), textureFileTypes.end(), file.path().extension().string()) != textureFileTypes.end())
+            if (std::find(m_textureFileTypes.begin(), m_textureFileTypes.end(), file.path().extension().string()) != m_textureFileTypes.end())
             {
                 #ifdef ENABLE_DEBUG_MESSAGES
                     std::cout << "DEBUG::Texture file found: " << file.path().filename() << std::endl;
                 #endif
 
-                texturePaths.push_back(file.path());
+                m_texturePaths.push_back(file.path());
             }
         }
     }
 }
 
-void GfxAssetsManager::loadTexturePaths()
+void GfxAssetsManager::refreshTexturePaths()
 {
-    std::filesystem::path textureFolderPath = getDefaultTexturesDirPath();
+    m_texturePaths.clear();
 
-    if (std::filesystem::exists(textureFolderPath) && std::filesystem::is_directory(textureFolderPath))
+    if (m_textureFolderPath.empty())
     {
-        populateTexturePaths(textureFolderPath);
+        m_textureFolderPath = getDefaultTexturesDirPath();
+    }
+
+    if (std::filesystem::exists(m_textureFolderPath) && std::filesystem::is_directory(m_textureFolderPath))
+    {
+        populateTexturePaths(m_textureFolderPath);
     }
     else
     {
         #ifdef ENABLE_DEBUG_MESSAGES
-            std::cout << "ERROR::Texture path directory is not valid: " << textureFolderPath.string() << std::endl;
+            std::cout << "ERROR::Texture path directory is not valid: " << m_textureFolderPath.string() << std::endl;
         #endif
     }
 
-    if (texturePaths.empty())
+    if (m_texturePaths.empty())
     {
         #ifdef ENABLE_DEBUG_MESSAGES
             std::cout << "ERROR::No textures detected! Please check texture path is configured correctly" << std::endl;
@@ -202,19 +207,17 @@ void GfxAssetsManager::loadTexturePaths()
     }
 }
 
-std::vector<std::filesystem::path> GfxAssetsManager::getTexturePaths()
+std::vector<std::filesystem::path>& GfxAssetsManager::getTexturePaths()
 {
-    if (texturePaths.empty())
-    {
-        loadTexturePaths();
-    }
+    // Always refresh before returning in case new texture was added to folder
+    refreshTexturePaths();
 
-    return texturePaths;
+    return m_texturePaths;
 }
 
 void GfxAssetsManager::resetShaderPaths()
 {
-    shaderPaths.clear();
+    m_shaderPaths.clear();
 }
 
 }
