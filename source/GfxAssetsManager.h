@@ -47,6 +47,8 @@ class GfxAssetsManager : public AssetsManager
         void populateTexturePaths(std::filesystem::path textureFolderPath);
 		std::vector<std::filesystem::path>& getTexturePaths();
         std::filesystem::path getDefaultTexturesDirPath();
+        void updateTextureFolderPath(std::filesystem::path path);
+        std::filesystem::path getTextureFolderPath();
 
 	private:
 		std::unordered_map<std::string, ShaderProgramFilePaths> m_shaderPaths;

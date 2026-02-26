@@ -28,6 +28,17 @@ std::vector<ShaderProgramFilePaths> GfxAssetsManager::loadShaderPathSet(std::vec
     return returnVector;
 } 
 
+void GfxAssetsManager::updateTextureFolderPath(std::filesystem::path path)
+{
+    m_textureFolderPath = path;
+    refreshTexturePaths();
+}
+    
+std::filesystem::path GfxAssetsManager::getTextureFolderPath()
+{
+    return m_textureFolderPath;
+}
+
 std::filesystem::path GfxAssetsManager::getDefaultShaderSourceDirPath()
 {
     #ifdef SHADER_SOURCE_DEFAULT_PATH
