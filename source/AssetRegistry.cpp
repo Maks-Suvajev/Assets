@@ -1,4 +1,4 @@
-#include "AssetsManager.h"
+#include "AssetRegistry.h"
 
 #include <fstream>
 #include <sstream>

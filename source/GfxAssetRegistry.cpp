@@ -1,17 +1,17 @@
 
-#include "GfxAssetsManager.h"
+#include "GfxAssetRegistry.h"
 
 namespace gfx {
 
 //Constuctor 
-GfxAssetsManager::GfxAssetsManager()
+GfxAssetRegistry::GfxAssetRegistry()
 : m_textureFileTypes(supportedTextureFileTypes),
   m_textureFolderPath(getDefaultTexturesDirPath()),
   m_shaderFolderPath(getDefaultShaderSourceDirPath())
 {
 }
 
-std::vector<ShaderProgramFilePaths> GfxAssetsManager::loadShaderPathSet(std::vector<ShaderProgramFilenameStrings> shaderFilenames)
+std::vector<ShaderProgramFilePaths> GfxAssetRegistry::loadShaderPathSet(std::vector<ShaderProgramFilenameStrings> shaderFilenames)
 {
     std::vector<ShaderProgramFilePaths> returnVector;
 
@@ -28,18 +28,18 @@ std::vector<ShaderProgramFilePaths> GfxAssetsManager::loadShaderPathSet(std::vec
     return returnVector;
 } 
 
-void GfxAssetsManager::updateTextureFolderPath(std::filesystem::path path)
+void GfxAssetRegistry::updateTextureFolderPath(std::filesystem::path path)
 {
     m_textureFolderPath = path;
     refreshTexturePaths();
 }
     
-std::filesystem::path GfxAssetsManager::getTextureFolderPath()
+std::filesystem::path GfxAssetRegistry::getTextureFolderPath()
 {
     return m_textureFolderPath;
 }
 
-std::filesystem::path GfxAssetsManager::getDefaultShaderSourceDirPath()
+std::filesystem::path GfxAssetRegistry::getDefaultShaderSourceDirPath()
 {
     #ifdef SHADER_SOURCE_DEFAULT_PATH
         return std::filesystem::path(SHADER_SOURCE_DEFAULT_PATH);
@@ -54,7 +54,7 @@ std::filesystem::path GfxAssetsManager::getDefaultShaderSourceDirPath()
     #endif
 }
 
-void GfxAssetsManager::checkPathsAndStore(ShaderProgramFilePaths& foundPaths)
+void GfxAssetRegistry::checkPathsAndStore(ShaderProgramFilePaths& foundPaths)
 {
     bool missingData = false; // Only store the set if there is no data missing
 
@@ -79,7 +79,7 @@ void GfxAssetsManager::checkPathsAndStore(ShaderProgramFilePaths& foundPaths)
     }
 }
 
-ShaderProgramFilePaths GfxAssetsManager::loadShaderPaths(ShaderProgramFilenameStrings sourceFileNames)
+ShaderProgramFilePaths GfxAssetRegistry::loadShaderPaths(ShaderProgramFilenameStrings sourceFileNames)
 {
     if (m_shaderPaths.contains(sourceFileNames.setName))
     {
@@ -156,7 +156,7 @@ ShaderProgramFilePaths GfxAssetsManager::loadShaderPaths(ShaderProgramFilenameSt
     return returnPaths;
 } 
 
-std::filesystem::path GfxAssetsManager::getDefaultTexturesDirPath()
+std::filesystem::path GfxAssetRegistry::getDefaultTexturesDirPath()
 {
     #ifdef TEXTURES_DEFAULT_PATH
         return std::filesystem::path(TEXTURES_DEFAULT_PATH);
@@ -172,7 +172,7 @@ std::filesystem::path GfxAssetsManager::getDefaultTexturesDirPath()
     #endif
 }
 
-void GfxAssetsManager::populateTexturePaths(std::filesystem::path textureFolderPath)
+void GfxAssetRegistry::populateTexturePaths(std::filesystem::path textureFolderPath)
 {
     for (const auto& file : std::filesystem::directory_iterator(textureFolderPath))
     {
@@ -190,7 +190,7 @@ void GfxAssetsManager::populateTexturePaths(std::filesystem::path textureFolderP
     }
 }
 
-void GfxAssetsManager::refreshTexturePaths()
+void GfxAssetRegistry::refreshTexturePaths()
 {
     m_texturePaths.clear();
 
@@ -218,7 +218,7 @@ void GfxAssetsManager::refreshTexturePaths()
     }
 }
 
-std::vector<std::filesystem::path>& GfxAssetsManager::getTexturePaths()
+std::vector<std::filesystem::path>& GfxAssetRegistry::getTexturePaths()
 {
     // Always refresh before returning in case new texture was added to folder
     refreshTexturePaths();
@@ -226,7 +226,7 @@ std::vector<std::filesystem::path>& GfxAssetsManager::getTexturePaths()
     return m_texturePaths;
 }
 
-void GfxAssetsManager::resetShaderPaths()
+void GfxAssetRegistry::resetShaderPaths()
 {
     m_shaderPaths.clear();
 }

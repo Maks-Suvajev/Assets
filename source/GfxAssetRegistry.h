@@ -1,7 +1,7 @@
 #ifndef GFX_ASSETS_MANAGER_H
 #define GFX_ASSETS_MANAGER_H
 
-#include "AssetsManager.h"
+#include "AssetRegistry.h"
 
 // STL
 #include <algorithm>
@@ -33,11 +33,11 @@ constexpr char fragShaderExtension[] = ".fs";
 const std::vector<std::string> supportedTextureFileTypes = {".png", ".jpg"}; // Evaluated at run time
 
 // Implemented as a singleton, we should only ever need a single instance to pull all of the required assets
-class GfxAssetsManager : public AssetsManager
+class GfxAssetRegistry : public AssetRegistry
 {
 	public:
 
-		GfxAssetsManager();
+		GfxAssetRegistry();
 		void resetShaderPaths();
         void checkPathsAndStore(ShaderProgramFilePaths& foundPaths);
         std::filesystem::path getDefaultShaderSourceDirPath();
