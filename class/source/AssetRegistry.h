@@ -11,6 +11,7 @@
 
 #include "ShaderTypes.h"
 #include "TextureTypes.h"
+#include "Material.h"
 
 class AssetRegistry
 {
@@ -56,6 +57,10 @@ std::filesystem::path AssetRegistry::getDefaultAssetPath()
 
             return std::canonical(resourcesDir / gfx::shaderSourceFolderName);
         #endif
+    }
+    else if constexpr (std::is_same_v<T, gfx::Material>)
+    {
+        return std::filesystem::path(); // Return default empty path
     }
     else
     {
