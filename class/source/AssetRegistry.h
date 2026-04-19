@@ -11,7 +11,13 @@
 
 #include "ShaderTypes.h"
 #include "TextureTypes.h"
-#include "Material.h"
+#include "MaterialTypes.h"
+#include "SceneModelTypes.h"
+
+namespace gfx
+{
+    class SceneModel;
+}
 
 class AssetRegistry
 {
@@ -24,8 +30,6 @@ class AssetRegistry
         template<typename T>
         std::filesystem::path getDefaultAssetPath();
 };
-
-
 
 template<typename T>
 std::filesystem::path AssetRegistry::getDefaultAssetPath()
@@ -43,7 +47,7 @@ std::filesystem::path AssetRegistry::getDefaultAssetPath()
             return std::filesystem::path(TEXTURES_DEFAULT_PATH);
         #else
             // Construct
-            return std::canonical(resourcesDir / gfx::defaultTexturesFolderName);
+            return std::filesystem::canonical(resourcesDir / gfx::defaultTexturesFolderName);
 
         #endif
     }
@@ -55,12 +59,16 @@ std::filesystem::path AssetRegistry::getDefaultAssetPath()
             // Construct
             std::filesystem::path renderEngineDir = assetsBaseDir.parent_path();
 
-            return std::canonical(resourcesDir / gfx::shaderSourceFolderName);
+            return std::filesystem::canonical(resourcesDir / gfx::shaderSourceFolderName);
         #endif
     }
     else if constexpr (std::is_same_v<T, gfx::Material>)
     {
         return std::filesystem::path(); // Return default empty path
+    }
+    else if constexpr (std::is_same_v<T, gfx::SceneModel>)
+    {
+        return std::filesystem::canonical(resourcesDir / gfx::modelSourceFolderName);
     }
     else
     {

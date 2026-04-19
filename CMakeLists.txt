@@ -2,8 +2,8 @@ add_library(AssetsLib
     class/source/AssetRegistry.cpp
 )
 target_link_libraries(AssetsLib
-    PRIVATE TypeLib
-    PUBLIC  ShaderLib
+    PRIVATE 
+        TypeLib
 )
 
 target_include_directories(AssetsLib 

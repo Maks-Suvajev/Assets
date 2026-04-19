@@ -10,8 +10,10 @@ in vec3 FragPos;
 struct Material 
 {
     sampler2D diffuse;
+    int       numDiffuse;
     sampler2D specular;
-    float shininess;
+    int       numSpecular;
+    float     shininess;
 };
 
 struct LightColours

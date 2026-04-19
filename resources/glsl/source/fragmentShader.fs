@@ -2,13 +2,16 @@
 
 out vec4 FragColor;
 
-in vec2 TexCoord;
+in vec2 TexCoords;
 
 uniform sampler2D textures[32]; // Need to read the max value of texture units 
-
-
+uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_diffuse2;
+uniform sampler2D texture_diffuse3;
+uniform sampler2D texture_specular1;
+uniform sampler2D texture_specular2;
 
 void main()
 {
-	FragColor = mix(texture(textures[0], TexCoord), texture(textures[1], TexCoord), 0.5); // Definitely needs to be fixed, need to add variable to toggle particular texture unit
+	FragColor = texture(texture_diffuse1, TexCoords); 
 }
