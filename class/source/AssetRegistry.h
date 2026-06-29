@@ -14,11 +14,6 @@
 #include "MaterialTypes.h"
 #include "SceneModelTypes.h"
 
-namespace gfx
-{
-    class SceneModel;
-}
-
 class AssetRegistry
 {
 	public:
